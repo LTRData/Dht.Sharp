@@ -48,39 +48,39 @@ namespace Dht.Sample
 			_timer.Tick += Timer_Tick;
 		}
 
-		protected override async void OnNavigatedTo(NavigationEventArgs e)
-		{
-			base.OnNavigatedTo(e);
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        {
+            base.OnNavigatedTo(e);
 
-			// ***
-			// *** Get a reference to the GPIO Controller.
-			// ***
-			GpioController controller = GpioController.GetDefault();
+            // ***
+            // *** Get a reference to the GPIO Controller.
+            // ***
+            var controller = await GpioController.GetDefaultAsync();
 
-			// ***
-			// *** Make sure the reference is valid (that e are connected to a device with
-			// *** a GPIO Controller.
-			// ***
-			if (controller != null)
-			{
-				// ***
-				// *** Set up the data pin.
-				// ***
-				GpioPin dataPin = GpioController.GetDefault().OpenPin(DataPinNumber, GpioSharingMode.Exclusive);
-				dataPin.SetDriveMode(GpioPinDriveMode.Input);
+            // ***
+            // *** Make sure the reference is valid (that e are connected to a device with
+            // *** a GPIO Controller.
+            // ***
+            if (controller == null)
+            {
+                return;
+            }
 
-				// ***
-				// *** Create the sensor.
-				// ***
-				_sensor = new Dht11(dataPin);
-				await _sensor.InitializeAsync();
-			}
+            // ***
+            // *** Set up the data pin.
+            // ***
+            var dataPin = controller.OpenPin(DataPinNumber, GpioSharingMode.Exclusive);
 
-			// ***
-			// *** Start the timer.
-			// ***
-			_timer.Start();
-		}
+            // ***
+            // *** Create the sensor.
+            // ***
+            _sensor = new Dht11(dataPin);
+
+            // ***
+            // *** Start the timer.
+            // ***
+            _timer.Start();
+        }
 
 		private async void Timer_Tick(object sender, object e)
 		{

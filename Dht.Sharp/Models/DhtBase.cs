@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Windows.Devices.Gpio;
 
@@ -15,43 +16,39 @@ namespace Dht.Sharp
         /// Creates an instance of Dht.Sharp.Dht22 with the given Data Pin
         /// and Trigger Pin.
         /// </summary>
-        /// <param name="dataPin">Specifies the GPIO pin used to read data from the sensor. This pin is connected
+        /// <param name="gpio_pin">Specifies the GPIO pin used to read data from the sensor. This pin is connected
         /// directly to the data pin on the sensor.</param>
-        public DhtBase(GpioPin dataPin)
+        public DhtBase(GpioPin gpio_pin)
         {
-            DataPin = dataPin ?? throw new ArgumentNullException(nameof(dataPin));
+            pin = gpio_pin ?? throw new ArgumentNullException(nameof(gpio_pin));
         }
 
         /// <summary>
         /// Gets/sets the GPIO pin used to read data from the sensor. This pin is connected
         /// directly to the data pin on the sensor.
         /// </summary>
-        public GpioPin DataPin { get; set; }
+        private GpioPin pin;
 
         /// <summary>
         /// Gets/sets a value in ms that indicates how long to wait for the sensor to 
         /// respond to a request for a reading. The default timeout is 100 ms.
         /// </summary>
-        public int Timeout { get; set; } = 100;
+        public int ReadTimeout { get; set; } = 100;
 
         /// <summary>
-        /// Initializes the sensor.
+        /// Gets/sets number of times to retry on timeouts, checksum errors etc.
         /// </summary>
-        public async Task InitializeAsync()
-        {
-            // ***
-            // *** Set the data pin HIGH.
-            // ***
-            DataPin.Write(GpioPinValue.High);
-            DataPin.SetDriveMode(GpioPinDriveMode.Output);
+        public int RetryCount { get; set; } = 5;
 
-            // ***
-            // *** The data sheet states that the sensor should be given 1 second to initialize.
-            // ***
-            await Task.Delay(TimeSpan.FromSeconds(1));
+        /// <summary>
+        /// Delay when initializing sensor before first reading or after failed readings.
+        /// </summary>
+        public TimeSpan InitializationDelay { get; set; } = TimeSpan.FromSeconds(1);
 
-            initialized = true;
-        }
+        /// <summary>
+        /// Delay when reinitializing sensor for a new reading after a successful reading.
+        /// </summary>
+        public TimeSpan ReinitializationDelay { get; set; } = TimeSpan.FromMilliseconds(20);
 
         private bool initialized;
 
@@ -64,49 +61,73 @@ namespace Dht.Sharp
         /// the data from the sensor.</returns>
         public async Task<IDhtReading> GetReadingAsync()
         {
-            if (!initialized)
+            IDhtReading reading = null;
+
+            for (var attempt = 0; attempt <= RetryCount; attempt++)
             {
-                await InitializeAsync();
+                pin.Write(GpioPinValue.High);
+                pin.SetDriveMode(GpioPinDriveMode.Output);
+
+                if (initialized)
+                {
+                    await Task.Delay(ReinitializationDelay);
+                }
+                else
+                {
+                    await Task.Delay(InitializationDelay);
+                }
+
+                reading = GetReading();
+
+                if (reading.Result == DhtReadingResult.Valid)
+                {
+                    initialized = true;
+                    break;
+                }
+
+                initialized = false;
+
+#if DEBUG
+                Trace.WriteLine($"Sensor read failed: {reading.Result}, attempt {attempt}");
+#endif
             }
+
+            return reading;
+        }
+
+        private IDhtReading GetReading()
+        {
+            var data = new byte[5];
 
             // ***
             // *** Bring the line low for 18 ms (this is needed for the DHT11), the DHT22 does need
             // *** need as long.
             // ***
-            DataPin.Write(GpioPinValue.High);
-            DataPin.SetDriveMode(GpioPinDriveMode.Output);
-
-            var init_delay = Task.Delay(20);
-
-            var bits = new bool[40];
-
-            await init_delay;
-
-            DataPin.Write(GpioPinValue.Low);
+            pin.Write(GpioPinValue.Low);
             SpinWaitMicroseconds(18000);
-            DataPin.Write(GpioPinValue.High);
+            pin.Write(GpioPinValue.High);
             SpinWaitMicroseconds(40);
-            DataPin.SetDriveMode(GpioPinDriveMode.Input);
+            pin.SetDriveMode(GpioPinDriveMode.Input);
             SpinWaitMicroseconds(10);
 
             // ***
             // *** Capture every falling edge until all bits are received or
             // *** timeout occurs
             // ***
-            var endTickCount = GetTickCount64() + Timeout;
+            var endTickCount = GetTickCount64() + ReadTimeout;
 
-            var previousValue = DataPin.Read();
+            var previousValue = pin.Read();
 
             var prevTime = 0L;
 
-            for (var i = -1; i < bits.Length;)
+            for (var i = -1; i < 40;)
             {
                 if (GetTickCount64() > endTickCount)
                 {
                     return DhtReading.FromTimeout();
                 }
 
-                var value = DataPin.Read();
+                var value = pin.Read();
 
                 if ((previousValue == GpioPinValue.High) && (value == GpioPinValue.Low))
                 {
@@ -118,7 +139,10 @@ namespace Dht.Sharp
                     if (i >= 0)
                     {
                         var difference = unchecked(now - prevTime);
-                        bits[i] = difference > OneThreshold;
+                        if (difference > OneThreshold)
+                        {
+                            data[i >> 3] |= (byte)(1 << ((~i) & 7));
+                        }
                     }
 
                     prevTime = now;
@@ -127,12 +151,6 @@ namespace Dht.Sharp
 
                 previousValue = value;
             }
-
-            // ***
-            // *** Convert the bit records to the 5 bytes of data that the sensor
-            // *** sends out.
-            // ***
-            var data = bits.ToByteArray();
 
             // ***
             // *** Convert the 5 bytes of data to an IDhtReading instance.
@@ -184,5 +202,31 @@ namespace Dht.Sharp
         /// <param name="data"></param>
         /// <returns></returns>
         protected abstract double ParseHumidty(byte[] data);
+
+        private bool disposedValue = false; // To detect redundant calls
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // TODO: dispose managed state (managed objects).
+                    pin?.Dispose();
+                }
+
+                // TODO: set large fields to null.
+                pin = null;
+
+                disposedValue = true;
+            }
+        }
+
+        // This code added to correctly implement the disposable pattern.
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
+            Dispose(true);
+        }
     }
 }

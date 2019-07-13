@@ -24,30 +24,29 @@ namespace Dht.Sharp
 	/// <summary>
 	/// Defines a type for a DHT sensor that can be used for a DHT22 or DHT11.
 	/// </summary>
-	public interface IDht
+	public interface IDht : IDisposable
 	{
-		/// <summary>
-		/// Gets/sets the GPIO pin used to read data from the sensor. This pin is connected
-		/// directly to the data pin on the sensor.
-		/// </summary>
-		GpioPin DataPin { get; set; }
-
 		/// <summary>
 		/// Gets/sets a value in ms that indicates how long to wait for the sensor to 
 		/// respond to a request for a reading. The default timeout is 100 ms.
 		/// </summary>
-		int Timeout { get; set; }
+		int ReadTimeout { get; set; }
 
-		/// <summary>
-		/// Initializes the sensor.
-		/// </summary>
-		Task InitializeAsync();
+        /// <summary>
+        /// Gets/sets number of times to retry on timeouts, checksum errors etc.
+        /// </summary>
+        int RetryCount { get; set; }
 
-		/// <summary>
-		/// Gets a reading from the sensor.
-		/// </summary>
-		/// <returns>Returns an IDhtReading instance containing 
-		/// the data from the sensor.</returns>
-		Task<IDhtReading> GetReadingAsync();
+        /// <summary>
+        /// Delay when initializing sensor before first reading or after failed readings.
+        /// </summary>
+        TimeSpan InitializationDelay { get; set; }
+
+        /// <summary>
+        /// Gets a reading from the sensor.
+        /// </summary>
+        /// <returns>Returns an IDhtReading instance containing 
+        /// the data from the sensor.</returns>
+        Task<IDhtReading> GetReadingAsync();
 	}
 }
