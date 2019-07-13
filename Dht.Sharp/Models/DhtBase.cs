@@ -1,12 +1,11 @@
-﻿using System;
+﻿using static LTRLib.LTRGeneric.NativeTimerFunctions;
+using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Windows.Devices.Gpio;
 
 namespace Dht.Sharp
 {
-    using static NativeTimerFunctions;
-
     /// <summary>
     /// Base class for IDht sensors.
     /// </summary>
@@ -28,6 +27,8 @@ namespace Dht.Sharp
         /// directly to the data pin on the sensor.
         /// </summary>
         private GpioPin pin;
+
+        public int PinNumber => pin.PinNumber;
 
         /// <summary>
         /// Gets/sets a value in ms that indicates how long to wait for the sensor to 
@@ -52,7 +53,7 @@ namespace Dht.Sharp
 
         private bool initialized;
 
-        private static readonly long OneThreshold = (long)(110 * PerformanceTicksPerMicrosec);
+        private static readonly long OneThreshold = PerformanceCountsFromMicroseconds(110);
 
         /// <summary>
         /// Gets a reading from the sensor.
@@ -88,12 +89,16 @@ namespace Dht.Sharp
                 initialized = false;
 
 #if DEBUG
-                Trace.WriteLine($"Sensor read failed: {reading.Result}, attempt {attempt}");
+                Debug.WriteLine($"Sensor read failed: {reading.Result}, attempt {attempt}");
 #endif
             }
 
             return reading;
         }
+
+        private static readonly long perf_counts_18ms = PerformanceCountsFromMicroseconds(18000);
+        private static readonly long perf_counts_40us = PerformanceCountsFromMicroseconds(40);
+        private static readonly long perf_counts_10us = PerformanceCountsFromMicroseconds(10);
 
         private IDhtReading GetReading()
         {
@@ -104,11 +109,11 @@ namespace Dht.Sharp
             // *** need as long.
             // ***
             pin.Write(GpioPinValue.Low);
-            SpinWaitMicroseconds(18000);
+            SpinWaitPerformanceCounts(perf_counts_18ms);
             pin.Write(GpioPinValue.High);
-            SpinWaitMicroseconds(40);
+            SpinWaitPerformanceCounts(perf_counts_40us);
             pin.SetDriveMode(GpioPinDriveMode.Input);
-            SpinWaitMicroseconds(10);
+            SpinWaitPerformanceCounts(perf_counts_10us);
 
             // ***
             // *** Capture every falling edge until all bits are received or

@@ -26,6 +26,11 @@ namespace Dht.Sharp
 	/// </summary>
 	public interface IDht : IDisposable
 	{
+        /// <summary>
+        /// Gets pin number for GPIO pin in use by this instance.
+        /// </summary>
+        int PinNumber { get; }
+
 		/// <summary>
 		/// Gets/sets a value in ms that indicates how long to wait for the sensor to 
 		/// respond to a request for a reading. The default timeout is 100 ms.

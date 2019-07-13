@@ -1,61 +1,91 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Runtime.InteropServices;
 
-namespace Dht.Sharp
+namespace LTRLib.LTRGeneric
 {
     public static class NativeTimerFunctions
     {
-        [DllImport("kernel32.dll", ExactSpelling = true)]
+        /// <summary>
+        /// Low accuracy timer.
+        /// </summary>
+        /// <returns>Returns number of ms since boot.</returns>
+        [DllImport("kernel32.dll")]
         extern public static long GetTickCount64();
 
-        [DllImport("kernel32.dll", ExactSpelling = true, SetLastError = true)]
-        extern public static bool QueryPerformanceFrequency(out long frequency);
+        [DllImport("kernel32.dll")]
+        extern private static void QueryPerformanceFrequency(out long frequency);
 
-        [DllImport("kernel32.dll", ExactSpelling = true, SetLastError = true)]
-        extern public static bool QueryPerformanceCounter(out long count);
+        [DllImport("kernel32.dll")]
+        extern private static void QueryPerformanceCounter(out long count);
 
-        public static long PerformanceFrequency { get; } = QueryPerformanceFrequency();
+        public static long PerformanceCountsPerSecond { get; }
 
-        public static decimal PerformanceTicksPerMillisec { get; } = (decimal)PerformanceFrequency / 1000;
+        public static long TicksPerMicrosecond { get; } =
+            TimeSpan.FromSeconds(1).Ticks / 1000000;
 
-        public static decimal PerformanceTicksPerMicrosec { get; } = (decimal)PerformanceFrequency / 1000000;
+        private static long performance_counts_per_ticks_multiplier;
+        private static long performance_counts_per_ticks_divisor;
 
-        private static long QueryPerformanceFrequency()
+        static NativeTimerFunctions()
         {
-            if (!QueryPerformanceFrequency(out var freq))
-            {
-                throw new Exception("QueryPerformanceFrequency failed", new Win32Exception());
-            }
+            QueryPerformanceFrequency(out var freq);
 
-            return freq;
+            PerformanceCountsPerSecond = freq;
+
+            performance_counts_per_ticks_multiplier = PerformanceCountsPerSecond;
+            performance_counts_per_ticks_divisor = TimeSpan.FromSeconds(1).Ticks;
+
+            while ((performance_counts_per_ticks_multiplier & 1) == 0 &&
+                (performance_counts_per_ticks_divisor & 1) == 0)
+            {
+                performance_counts_per_ticks_multiplier >>= 1;
+                performance_counts_per_ticks_divisor >>= 1;
+            }
         }
 
+        public static long PerformanceCountsFromMicroseconds(long microsec) =>
+            PerformanceCountsFromTicks(checked(microsec * TicksPerMicrosecond));
+
+        public static long PerformanceCountsFromTicks(long ticks)
+        {
+            var prod = checked(ticks * performance_counts_per_ticks_multiplier);
+            var value = prod / performance_counts_per_ticks_divisor;
+
+            if ((prod % performance_counts_per_ticks_divisor) != 0)
+            {
+                ++value;
+            }
+
+            return value;
+        }
+
+        /// <summary>
+        /// High accuracy timer.
+        /// </summary>
+        /// <value>Number of performance timer counts since boot.
+        /// 
+        /// Number of performance timer counts per second can be found in <see cref="PerformanceCountsPerSecond"> property.</see>"/></value>
         public static long PerformanceCounter
         {
             get
             {
-                if (!QueryPerformanceCounter(out var count))
-                {
-                    throw new Exception("QueryPerformanceCounter failed", new Win32Exception());
-                }
-
+                QueryPerformanceCounter(out var count);
                 return count;
             }
         }
 
-        public static double PerformanceTimeSeconds => (double)PerformanceCounter / PerformanceFrequency;
+        public static TimeSpan PerformanceCountsToTimeSpan(long count) =>
+            TimeSpan.FromTicks(checked(count * performance_counts_per_ticks_divisor / performance_counts_per_ticks_multiplier));
 
-        public static decimal PerformanceTimeMillisec => PerformanceCounter / PerformanceTicksPerMillisec;
-
-        public static decimal PerformanceTimeMicrosec => PerformanceCounter / PerformanceTicksPerMicrosec;
-
-        public static TimeSpan PerformanceTimeSpan => TimeSpan.FromSeconds(PerformanceTimeSeconds);
-
-        public static void SpinWaitMicroseconds(long microsec)
+        /// <summary>
+        /// Waits specified number of performance timer counts by spinning in a tight loop until at least timer counts have passed.
+        /// 
+        /// Number of performance timer counts per second can be found in <see cref="PerformanceCountsPerSecond"> property.</see>"/>
+        /// </summary>
+        /// <param name="perf_count">Number of performance timer counts to wait.</param>
+        public static void SpinWaitPerformanceCounts(long perf_count)
         {
-            var perf_count = PerformanceCounter +
-                (long)Math.Ceiling(PerformanceTicksPerMicrosec * microsec);
+            perf_count += PerformanceCounter;
 
             while (PerformanceCounter < perf_count)
             {
