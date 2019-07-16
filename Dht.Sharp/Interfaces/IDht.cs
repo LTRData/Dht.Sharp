@@ -43,9 +43,20 @@ namespace Dht.Sharp
         int RetryCount { get; set; }
 
         /// <summary>
-        /// Delay when initializing sensor before first reading or after failed readings.
+        /// Delay in ms when initializing sensor before first reading or after failed readings.
         /// </summary>
-        TimeSpan InitializationDelay { get; set; }
+        int InitializationDelay { get; set; }
+
+        /// <summary>
+        /// Delay in ms when reinitializing sensor for a new reading after a successful reading.
+        /// </summary>
+        int ReinitializationDelay { get; set; }
+
+        /// <summary>
+        /// Minimum interval in ms required by sensor between readings. Default is 1000 ms
+        /// for DHT11 and 2000 ms for DHT22.
+        /// </summary>
+        int MinSampleInterval { get; set; }
 
         /// <summary>
         /// Gets a reading from the sensor.

@@ -28,7 +28,7 @@ namespace Dht.Sample
 
     public partial class MainPage : BindablePage
 	{
-        private const int DataPinNumber = 24;
+        private const int DataPinNumber = 26;
 
         private DispatcherTimer _timer = new DispatcherTimer();
 

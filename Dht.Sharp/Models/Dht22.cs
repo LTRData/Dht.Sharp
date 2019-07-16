@@ -33,6 +33,7 @@ namespace Dht.Sharp
         public Dht22(GpioPin dataPin)
             : base(dataPin)
         {
+            MinSampleInterval = 2000;
         }
 
         /// <summary>

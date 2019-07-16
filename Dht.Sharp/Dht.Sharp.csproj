@@ -68,7 +68,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <UseVSHostingProcess>false</UseVSHostingProcess>
     <ErrorReport>prompt</ErrorReport>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|ARM'">
     <PlatformTarget>ARM</PlatformTarget>
@@ -108,6 +108,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Decorators\DhtExtensions.cs" />
+    <Compile Include="LTRLib\NumericExtensions.cs" />
+    <Compile Include="LTRLib\PerformanceCounter.cs" />
     <Compile Include="Models\Dht11.cs" />
     <Compile Include="Exceptions\DhtException.cs" />
     <Compile Include="Exceptions\DhtNotInitializedException.cs" />
@@ -116,7 +118,6 @@
     <Compile Include="Models\DhtReading.cs" />
     <Compile Include="Interfaces\IDht.cs" />
     <Compile Include="Interfaces\IDhtReading.cs" />
-    <Compile Include="NativeTimerFunctions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Properties\Dht.Sharp.rd.xml" />
   </ItemGroup>

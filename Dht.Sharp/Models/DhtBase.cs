@@ -1,4 +1,4 @@
-﻿using static LTRLib.LTRGeneric.NativeTimerFunctions;
+﻿using static LTRLib.LTRGeneric.PerformanceCounter;
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -32,9 +32,13 @@ namespace Dht.Sharp
 
         /// <summary>
         /// Gets/sets a value in ms that indicates how long to wait for the sensor to 
-        /// respond to a request for a reading. The default timeout is 100 ms.
+        /// respond to a request for a reading. The default timeout is 40 ms.
+        /// 
+        /// This timeout uses a low-accuracy timer which typically does not work well with
+        /// small timeout values, which could lead to unexpected timeouts if a lower value
+        /// than about 40 ms is used.
         /// </summary>
-        public int ReadTimeout { get; set; } = 100;
+        public int ReadTimeout { get; set; } = 40;
 
         /// <summary>
         /// Gets/sets number of times to retry on timeouts, checksum errors etc.
@@ -42,18 +46,24 @@ namespace Dht.Sharp
         public int RetryCount { get; set; } = 5;
 
         /// <summary>
-        /// Delay when initializing sensor before first reading or after failed readings.
+        /// Delay in ms when initializing sensor before first reading or after failed readings.
         /// </summary>
-        public TimeSpan InitializationDelay { get; set; } = TimeSpan.FromSeconds(1);
+        public int InitializationDelay { get; set; } = 1000;
 
         /// <summary>
-        /// Delay when reinitializing sensor for a new reading after a successful reading.
+        /// Delay in ms when reinitializing sensor for a new reading after a successful reading.
         /// </summary>
-        public TimeSpan ReinitializationDelay { get; set; } = TimeSpan.FromMilliseconds(20);
+        public int ReinitializationDelay { get; set; } = 20;
 
-        private bool initialized;
+        /// <summary>
+        /// Minimum interval in ms required by sensor between readings. Default is 1000 ms
+        /// for DHT11 and 2000 ms for DHT22.
+        /// </summary>
+        public int MinSampleInterval { get; set; }
 
-        private static readonly long OneThreshold = PerformanceCountsFromMicroseconds(110);
+        private long last_success_timestamp;
+
+        private static readonly long OneThreshold = ConvertMicrosecondsToPerformanceCounts(110);
 
         /// <summary>
         /// Gets a reading from the sensor.
@@ -69,24 +79,30 @@ namespace Dht.Sharp
                 pin.Write(GpioPinValue.High);
                 pin.SetDriveMode(GpioPinDriveMode.Output);
 
-                if (initialized)
+                if (last_success_timestamp == 0)
                 {
-                    await Task.Delay(ReinitializationDelay);
+                    await Task.Delay(InitializationDelay);
+                }
+                else if (GetTickCount64() - last_success_timestamp < MinSampleInterval)
+                {
+                    var delay = Math.Max(MinSampleInterval - (int)(GetTickCount64() - last_success_timestamp), ReinitializationDelay);
+
+                    await Task.Delay(delay);
                 }
                 else
                 {
-                    await Task.Delay(InitializationDelay);
+                    await Task.Delay(ReinitializationDelay);
                 }
 
                 reading = GetReading();
 
                 if (reading.Result == DhtReadingResult.Valid)
                 {
-                    initialized = true;
+                    last_success_timestamp = GetTickCount64();
                     break;
                 }
 
-                initialized = false;
+                last_success_timestamp = 0;
 
 #if DEBUG
                 Debug.WriteLine($"Sensor read failed: {reading.Result}, attempt {attempt}");
@@ -96,13 +112,19 @@ namespace Dht.Sharp
             return reading;
         }
 
-        private static readonly long perf_counts_18ms = PerformanceCountsFromMicroseconds(18000);
-        private static readonly long perf_counts_40us = PerformanceCountsFromMicroseconds(40);
-        private static readonly long perf_counts_10us = PerformanceCountsFromMicroseconds(10);
+        private static readonly long perf_counts_18ms = ConvertMicrosecondsToPerformanceCounts(18000);
+        private static readonly long perf_counts_40us = ConvertMicrosecondsToPerformanceCounts(40);
+        private static readonly long perf_counts_10us = ConvertMicrosecondsToPerformanceCounts(10);
+
+        private const int DataBufferBytes = 5;
+
+        private const int DataBufferBits = DataBufferBytes * 8;
+
+        private readonly byte[] DataBuffer = new byte[DataBufferBytes];
 
         private IDhtReading GetReading()
         {
-            var data = new byte[5];
+            Array.Clear(DataBuffer, 0, DataBuffer.Length);
 
             // ***
             // *** Bring the line low for 18 ms (this is needed for the DHT11), the DHT22 does need
@@ -125,7 +147,7 @@ namespace Dht.Sharp
 
             var prevTime = 0L;
 
-            for (var i = -1; i < 40;)
+            for (var i = -1; i < DataBufferBits;)
             {
                 if (GetTickCount64() > endTickCount)
                 {
@@ -139,14 +161,14 @@ namespace Dht.Sharp
                     // ***
                     // *** A falling edge was detected
                     // ***
-                    var now = PerformanceCounter;
+                    var now = PerformanceCounterValue;
 
                     if (i >= 0)
                     {
                         var difference = unchecked(now - prevTime);
                         if (difference > OneThreshold)
                         {
-                            data[i >> 3] |= (byte)(1 << ((~i) & 7));
+                            DataBuffer[i >> 3] |= (byte)(1 << ((~i) & 7));
                         }
                     }
 
@@ -160,7 +182,7 @@ namespace Dht.Sharp
             // ***
             // *** Convert the 5 bytes of data to an IDhtReading instance.
             // ***
-            return ParseData(data);
+            return ParseData(DataBuffer);
         }
 
         private IDhtReading ParseData(byte[] data)
