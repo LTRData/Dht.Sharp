@@ -1,6 +1,6 @@
-﻿// Copyright © 2018 Daniel Porrey
+﻿// Copyright © 2018 Daniel Porrey, modified by Olof Lagerkvist 2019
 //
-// This file is part of the Dht11 Solution.
+// This file is part of the DhtSharp Solution.
 // 
 // Dht.Sharp Solution is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -25,15 +25,14 @@ namespace Dht.Sharp
     public class Dht11 : DhtBase
     {
         /// <summary>
-        /// Creates an instance of Dht.Sharp.Dht22 with the given Data Pin
-        /// and Trigger Pin.
+        /// Creates an instance of Dht.Sharp.Dht11 with the given Data Pin.
         /// </summary>
         /// <param name="dataPin">Specifies the GPIO pin used to read data from the sensor. This pin is connected
         /// directly to the data pin on the sensor.</param>
         public Dht11(GpioPin dataPin)
             : base(dataPin)
         {
-            MinSampleInterval = 2000;
+            MinSampleInterval = 1000;
         }
 
         /// <summary>

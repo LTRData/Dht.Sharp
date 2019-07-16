@@ -1,6 +1,6 @@
-﻿// Copyright © 2018 Daniel Porrey
+﻿// Copyright © 2018 Daniel Porrey, modified by Olof Lagerkvist 2019
 //
-// This file is part of the Dht11 Solution.
+// This file is part of the DhtSharp Solution.
 // 
 // Dht.Sharp Solution is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by

@@ -112,7 +112,6 @@
     <Compile Include="LTRLib\PerformanceCounter.cs" />
     <Compile Include="Models\Dht11.cs" />
     <Compile Include="Exceptions\DhtException.cs" />
-    <Compile Include="Exceptions\DhtNotInitializedException.cs" />
     <Compile Include="Models\Dht22.cs" />
     <Compile Include="Models\DhtBase.cs" />
     <Compile Include="Models\DhtReading.cs" />

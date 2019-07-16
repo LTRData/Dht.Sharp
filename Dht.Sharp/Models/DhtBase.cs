@@ -1,8 +1,25 @@
-﻿using static LTRLib.LTRGeneric.PerformanceCounter;
+﻿// Copyright © 2018 Daniel Porrey, modified by Olof Lagerkvist 2019
+//
+// This file is part of the DhtSharp Solution.
+// 
+// Dht.Sharp Solution is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// Dht.Sharp Solution is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with Dht.Sharp Solution. If not, see http://www.gnu.org/licenses/.
+//
+
 using System;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using Windows.Devices.Gpio;
+using static LTRLib.LTRGeneric.PerformanceCounter;
 
 namespace Dht.Sharp
 {
@@ -12,8 +29,7 @@ namespace Dht.Sharp
     public abstract class DhtBase : IDht
     {
         /// <summary>
-        /// Creates an instance of Dht.Sharp.Dht22 with the given Data Pin
-        /// and Trigger Pin.
+        /// Creates an instance of Dht.Sharp.DhtBase with the given Data Pin.
         /// </summary>
         /// <param name="gpio_pin">Specifies the GPIO pin used to read data from the sensor. This pin is connected
         /// directly to the data pin on the sensor.</param>
