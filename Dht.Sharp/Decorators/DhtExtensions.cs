@@ -62,7 +62,7 @@ namespace Dht.Sharp
         /// <param name="data">Bit field</param>
         /// <param name="bitnumber">Bit number to set to 0</param>
         public static void ClearBit(this byte[] data, int bitnumber) =>
-            data[bitnumber >> 3] &= (byte)unchecked(~(1 << ((~bitnumber) & 7)));
+            data[bitnumber >> 3] &= unchecked((byte)~(1 << ((~bitnumber) & 7)));
 
         /// <summary>
         /// Gets a bit from a bit field.
