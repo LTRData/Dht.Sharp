@@ -111,7 +111,6 @@
     <Compile Include="LTRLib\NumericExtensions.cs" />
     <Compile Include="LTRLib\PerformanceCounter.cs" />
     <Compile Include="Models\Dht11.cs" />
-    <Compile Include="Exceptions\DhtException.cs" />
     <Compile Include="Models\Dht22.cs" />
     <Compile Include="Models\DhtBase.cs" />
     <Compile Include="Models\DhtReading.cs" />
@@ -132,6 +131,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Dht.Sharp.1.0.0.nupkg" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Exceptions\" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

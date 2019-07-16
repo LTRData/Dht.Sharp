@@ -29,29 +29,48 @@ namespace Dht.Sharp
         /// </summary>
         /// <param name="data"></param>
         /// <returns></returns>
-        public static byte ExpectedChecksum(this byte[] data)
-		{
-			return data[4];
-		}
+        public static byte ExpectedChecksum(this byte[] data) =>
+            data[4];
 
-		/// <summary>
-		/// Calculates the checksum of the first 4 bytes of data.
-		/// </summary>
-		/// <param name="data"></param>
-		/// <returns></returns>
-		public static byte ActualChecksum(this byte[] data)
-		{
-			return (byte)(data[0] + data[1] + data[2] + data[3]);
-		}
+        /// <summary>
+        /// Calculates the checksum of the first 4 bytes of data.
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        public static byte ActualChecksum(this byte[] data) =>
+            (byte)(data[0] + data[1] + data[2] + data[3]);
 
-		/// <summary>
-		/// Compares the expected and actual checksums.
-		/// </summary>
-		/// <param name="data"></param>
-		/// <returns></returns>
-		public static bool HasValidChecksum(this byte[] data)
-		{
-			return data.ExpectedChecksum() == data.ActualChecksum();
-		}
-	}
+        /// <summary>
+        /// Compares the expected and actual checksums.
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        public static bool HasValidChecksum(this byte[] data) =>
+            data.ExpectedChecksum() == data.ActualChecksum();
+
+        /// <summary>
+        /// Sets a bit to 1 in a bit field.
+        /// </summary>
+        /// <param name="data">Bit field</param>
+        /// <param name="bitnumber">Bit number to set to 1</param>
+        public static void SetBit(this byte[] data, int bitnumber) =>
+            data[bitnumber >> 3] |= (byte)(1 << ((~bitnumber) & 7));
+
+        /// <summary>
+        /// Sets a bit to 0 in a bit field.
+        /// </summary>
+        /// <param name="data">Bit field</param>
+        /// <param name="bitnumber">Bit number to set to 0</param>
+        public static void ClearBit(this byte[] data, int bitnumber) =>
+            data[bitnumber >> 3] &= (byte)unchecked(~(1 << ((~bitnumber) & 7)));
+
+        /// <summary>
+        /// Gets a bit from a bit field.
+        /// </summary>
+        /// <param name="data">Bit field</param>
+        /// <param name="bitnumber">Bit number to get/param>
+        /// <returns>True if value of specified bit is 1, false if 0.</returns>
+        public static bool GetBit(this byte[] data, int bitnumber) =>
+            (data[bitnumber >> 3] & (1 << ((~bitnumber) & 7))) != 0;
+    }
 }

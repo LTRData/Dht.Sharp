@@ -184,7 +184,7 @@ namespace Dht.Sharp
                         var difference = unchecked(now - prevTime);
                         if (difference > OneThreshold)
                         {
-                            DataBuffer[i >> 3] |= (byte)(1 << ((~i) & 7));
+                            DataBuffer.SetBit(i);
                         }
                     }
 
