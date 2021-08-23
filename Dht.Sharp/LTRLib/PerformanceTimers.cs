@@ -25,7 +25,7 @@ namespace LTRLib.LTRGeneric
     /// <summary>
     /// Static methods and properties for accessing high-performance timer values.
     /// </summary>
-    public static class PerformanceTimers
+    internal static class PerformanceTimers
     {
         /// <summary>
         /// Low accuracy timer.

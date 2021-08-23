@@ -23,7 +23,7 @@ namespace LTRLib.Extensions
     /// <summary>
     /// Static methods for factorization of integer values.
     /// </summary>
-    public static class NumericExtensions
+    internal static class NumericExtensions
     {
         /// <summary>
         /// Finds greatest common divisor for two values.
