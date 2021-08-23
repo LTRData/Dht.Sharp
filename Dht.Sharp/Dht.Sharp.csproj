@@ -9,13 +9,21 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <TargetFramework>net5.0-windows10.0.17763.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;net5.0-windows10.0.17763.0</TargetFrameworks>
     <LangVersion>9.0</LangVersion>
+    <OutputPath>..\$(Configuration)\</OutputPath>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="System.Device.Gpio" Version="1.5.0" />
+    <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.17763.1000" Condition="'$(TargetFramework.Contains(`-windows`))' == 'false'" />
+    <PackageReference Include="System.Device.Gpio" Version="1.5.0" Condition="'$(TargetFramework.Contains(`-windows`))' == 'true'" />
   </ItemGroup>
 
 </Project>
