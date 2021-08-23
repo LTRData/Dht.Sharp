@@ -15,34 +15,51 @@
 // You should have received a copy of the GNU General Public License
 // along with Dht.Sharp Solution. If not, see http://www.gnu.org/licenses/.
 //
-using Windows.Devices.Gpio;
+using System.IO.Ports;
 
 namespace Dht.Sharp
 {
     /// <summary>
-    /// An instance of IDht used specifically for the DHT11 sensor.
+    /// An instance of IDht used specifically for the DHT22 sensor.
     /// </summary>
-    public class Dht11 : DhtBase
-    {
+    public class Dht22 : DhtBase
+	{
         /// <summary>
-        /// Creates an instance of Dht.Sharp.Dht11 with the given Data Pin.
+        /// Creates an instance of Dht.Sharp.Dht22 with the given Data Pin.
         /// </summary>
         /// <param name="dataPin">Specifies the GPIO pin used to read data from the sensor. This pin is connected
         /// directly to the data pin on the sensor.</param>
-        public Dht11(GpioPin dataPin)
+        public Dht22(SerialPort dataPin)
             : base(dataPin) =>
-            MinSampleInterval = 1000;
+            MinSampleInterval = 2000;
 
         /// <summary>
         /// Converts the byte data to a temperature value.
         /// </summary>
         /// <param name="data"></param>
         /// <returns></returns>
-        protected override double ParseTemperature(byte[] data) =>
+        protected override double ParseTemperature(byte[] data)
+        {
             // ***
-            // *** Get the temperature from bytes 2 and 3.
+            // *** Get the temperature from bytes 2 and 3. AND byte 2 the 
+            // *** high byte with 0x7f to clear the highest bit (this bit is
+            // *** used to indicate if the temperature is positive or negative).
             // ***
-            data[2] + data[3] / 10d;
+            var returnValue = (((data[2] & 0x7f) << 8) + data[3]) / 10d;
+
+            // ***
+            // *** if the highest bit in the temperature is 1, then this
+            // *** is a negative temperature value.
+            // ***
+            var negativeTemperature = (data[2] & 0x80) == 0x80;
+
+            if (negativeTemperature)
+            {
+                returnValue *= -1;
+            }
+
+            return returnValue;
+        }
 
         /// <summary>
         /// Converts the byte data to a humidity value.
@@ -53,6 +70,6 @@ namespace Dht.Sharp
             // ***
             // *** Get the humidity from bytes 0 and 1
             // ***
-            data[0] + data[1] / 10d;
+            ((data[0] << 8) + data[1]) / 10d;
     }
 }

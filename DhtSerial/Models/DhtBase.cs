@@ -18,9 +18,9 @@
 
 using System;
 using System.Diagnostics;
+using System.IO.Ports;
 using System.Threading.Tasks;
-using Windows.Devices.Gpio;
-using static LTRLib.LTRGeneric.PerformanceTimers;
+using static LTRLib.LTRGeneric.PerformanceCounter;
 
 namespace Dht.Sharp
 {
@@ -34,16 +34,16 @@ namespace Dht.Sharp
         /// </summary>
         /// <param name="gpio_pin">Specifies the GPIO pin used to read data from the sensor. This pin is connected
         /// directly to the data pin on the sensor.</param>
-        public DhtBase(GpioPin gpio_pin) =>
+        public DhtBase(SerialPort gpio_pin) =>
             pin = gpio_pin ?? throw new ArgumentNullException(nameof(gpio_pin));
 
         /// <summary>
         /// Gets/sets the GPIO pin used to read data from the sensor. This pin is connected
         /// directly to the data pin on the sensor.
         /// </summary>
-        private GpioPin pin;
+        private SerialPort pin;
 
-        public int PinNumber => pin.PinNumber;
+        public string PortName => pin.PortName;
 
         /// <summary>
         /// Gets/sets a value in ms that indicates how long to wait for the sensor to 
@@ -91,8 +91,7 @@ namespace Dht.Sharp
 
             for (var attempt = 0; attempt <= RetryCount; attempt++)
             {
-                pin.Write(GpioPinValue.High);
-                pin.SetDriveMode(GpioPinDriveMode.Output);
+                pin.RtsEnable = true;
 
                 if (last_success_timestamp == 0)
                 {
@@ -145,11 +144,11 @@ namespace Dht.Sharp
             // *** Bring the line low for 18 ms (this is needed for the DHT11), the DHT22 does need
             // *** need as long.
             // ***
-            pin.Write(GpioPinValue.Low);
+            pin.RtsEnable = false;
             SpinWaitPerformanceCounts(perf_counts_18ms);
-            pin.Write(GpioPinValue.High);
+            pin.RtsEnable = true;
             SpinWaitPerformanceCounts(perf_counts_40us);
-            pin.SetDriveMode(GpioPinDriveMode.Input);
+            //pin.SetDriveMode(GpioPinDriveMode.Input);
             SpinWaitPerformanceCounts(perf_counts_10us);
 
             // ***
@@ -158,7 +157,7 @@ namespace Dht.Sharp
             // ***
             var endTickCount = GetTickCount64() + ReadTimeout;
 
-            var previousValue = pin.Read();
+            var previousValue = pin.DsrHolding;
 
             var prevTime = 0L;
 
@@ -169,9 +168,9 @@ namespace Dht.Sharp
                     return DhtReading.FromTimeout();
                 }
 
-                var value = pin.Read();
+                var value = pin.DsrHolding;
 
-                if ((previousValue == GpioPinValue.High) && (value == GpioPinValue.Low))
+                if (previousValue && !value)
                 {
                     // ***
                     // *** A falling edge was detected

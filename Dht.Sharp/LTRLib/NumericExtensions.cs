@@ -81,10 +81,8 @@ namespace LTRLib.Extensions
         /// <param name="a">First value</param>
         /// <param name="b">Second value</param>
         /// <returns>Least common multiple for values a and b.</returns>
-        public static int LeastCommonMultiple(int a, int b)
-        {
-            return (a / GreatestCommonDivisor(a, b)) * b;
-        }
+        public static int LeastCommonMultiple(int a, int b) =>
+            (a / GreatestCommonDivisor(a, b)) * b;
 
         /// <summary>
         /// Finds least common multiple for two values.
@@ -92,10 +90,8 @@ namespace LTRLib.Extensions
         /// <param name="a">First value</param>
         /// <param name="b">Second value</param>
         /// <returns>Least common multiple for values a and b.</returns>
-        public static long LeastCommonMultiple(long a, long b)
-        {
-            return (a / GreatestCommonDivisor(a, b)) * b;
-        }
+        public static long LeastCommonMultiple(long a, long b) =>
+            (a / GreatestCommonDivisor(a, b)) * b;
 
         /// <summary>
         /// Finds least common multiple for a sequence of values.

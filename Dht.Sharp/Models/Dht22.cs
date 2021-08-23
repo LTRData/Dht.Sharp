@@ -30,10 +30,8 @@ namespace Dht.Sharp
         /// <param name="dataPin">Specifies the GPIO pin used to read data from the sensor. This pin is connected
         /// directly to the data pin on the sensor.</param>
         public Dht22(GpioPin dataPin)
-            : base(dataPin)
-        {
+            : base(dataPin) =>
             MinSampleInterval = 2000;
-        }
 
         /// <summary>
         /// Converts the byte data to a temperature value.
@@ -68,14 +66,10 @@ namespace Dht.Sharp
         /// </summary>
         /// <param name="data"></param>
         /// <returns></returns>
-        protected override double ParseHumidty(byte[] data)
-        {
+        protected override double ParseHumidty(byte[] data) =>
             // ***
             // *** Get the humidity from bytes 0 and 1
             // ***
-            var returnValue = ((data[0] << 8) + data[1]) / 10d;
-
-            return returnValue;
-        }
+            ((data[0] << 8) + data[1]) / 10d;
     }
 }

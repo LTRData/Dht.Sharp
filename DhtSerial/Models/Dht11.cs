@@ -15,7 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Dht.Sharp Solution. If not, see http://www.gnu.org/licenses/.
 //
-using Windows.Devices.Gpio;
+
+using System.IO.Ports;
 
 namespace Dht.Sharp
 {
@@ -29,7 +30,7 @@ namespace Dht.Sharp
         /// </summary>
         /// <param name="dataPin">Specifies the GPIO pin used to read data from the sensor. This pin is connected
         /// directly to the data pin on the sensor.</param>
-        public Dht11(GpioPin dataPin)
+        public Dht11(SerialPort dataPin)
             : base(dataPin) =>
             MinSampleInterval = 1000;
 

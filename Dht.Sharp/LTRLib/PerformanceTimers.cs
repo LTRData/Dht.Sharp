@@ -25,7 +25,7 @@ namespace LTRLib.LTRGeneric
     /// <summary>
     /// Static methods and properties for accessing high-performance timer values.
     /// </summary>
-    public static class PerformanceCounter
+    public static class PerformanceTimers
     {
         /// <summary>
         /// Low accuracy timer.
@@ -135,7 +135,7 @@ namespace LTRLib.LTRGeneric
         private static readonly long performance_counts_per_ticks_multiplier;
         private static readonly long performance_counts_per_ticks_divisor;
 
-        static PerformanceCounter()
+        static PerformanceTimers()
         {
             QueryPerformanceFrequency(out var freq);
 
