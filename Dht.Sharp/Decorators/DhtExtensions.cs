@@ -46,7 +46,8 @@ namespace Dht.Sharp
         /// <param name="data"></param>
         /// <returns></returns>
         public static bool HasValidChecksum(this byte[] data) =>
-            data.ExpectedChecksum() == data.ActualChecksum();
+            data.ExpectedChecksum() == data.ActualChecksum() &&
+            data.Any(b => !b.Equals(0));
 
         /// <summary>
         /// Sets a bit to 1 in a bit field.
