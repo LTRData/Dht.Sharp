@@ -1,0 +1,10 @@
+<Project>
+
+  <PropertyGroup>
+    <LangVersion>Latest</LangVersion>
+    <PackageId>LTRData.$(MSBuildProjectName)</PackageId>
+    <Company>LTR Data</Company>
+    <PackageOutputPath>$(LocalNuGetPath)</PackageOutputPath>
+  </PropertyGroup>
+  
+</Project>
