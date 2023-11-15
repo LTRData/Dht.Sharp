@@ -17,11 +17,10 @@
 
 using System;
 using System.Runtime.InteropServices;
+using LTRLib.Extensions;
 
 namespace LTRLib.LTRGeneric
 {
-    using Extensions;
-
     /// <summary>
     /// Static methods and properties for accessing high-performance timer values.
     /// </summary>
@@ -77,7 +76,7 @@ namespace LTRLib.LTRGeneric
         /// <summary>
         /// Converts a number of microseconds to performance timer counts.
         /// </summary>
-        /// <param name="ticks">Number of ticks.</param>
+        /// <param name="microsec">Number of ticks.</param>
         /// <returns>Number of performance timer counts corresponding to specified number of microseconds, rounded up to nearest integer.</returns>
         public static long ConvertMicrosecondsToPerformanceCounts(long microsec) =>
             ConvertTicksToPerformanceCounts(checked(microsec * ticks_per_microsecond));
@@ -85,7 +84,7 @@ namespace LTRLib.LTRGeneric
         /// <summary>
         /// Converts a TimeSpan value to performance timer counts.
         /// </summary>
-        /// <param name="ticks">Number of ticks.</param>
+        /// <param name="timespan">Number of ticks.</param>
         /// <returns>Number of performance timer counts corresponding to TimeSpan value, rounded up to nearest integer number of performance timer counts.</returns>
         public static long ConvertToPerformanceCounts(this TimeSpan timespan) =>
             ConvertTicksToPerformanceCounts(timespan.Ticks);
@@ -112,7 +111,7 @@ namespace LTRLib.LTRGeneric
         /// 
         /// Number of performance timer counts per second can be found in <see cref="PerformanceCountsPerSecond">PerformanceCountsPerSecond</see> property.
         /// 
-        /// You can convert microseconds, ticks or TimeSpan values to performance counts using support methods in this class.</see>
+        /// You can convert microseconds, ticks or TimeSpan values to performance counts using support methods in this class.
         /// </summary>
         /// <param name="perfcount">Number of performance timer counts to wait.</param>
         public static void SpinWaitPerformanceCounts(long perfcount)

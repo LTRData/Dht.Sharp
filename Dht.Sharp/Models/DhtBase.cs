@@ -16,6 +16,7 @@
 // along with Dht.Sharp Solution. If not, see http://www.gnu.org/licenses/.
 //
 
+using LTRData.Extensions.Buffers;
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -43,6 +44,7 @@ namespace Dht.Sharp
         /// </summary>
         private GpioPin pin;
 
+        /// <inheritdoc/>
         public int PinNumber => pin.PinNumber;
 
         /// <summary>
@@ -247,6 +249,7 @@ namespace Dht.Sharp
 
         private bool disposedValue = false; // To detect redundant calls
 
+        /// <inheritdoc/>
         protected virtual void Dispose(bool disposing)
         {
             if (!disposedValue)
@@ -265,6 +268,7 @@ namespace Dht.Sharp
         }
 
         // This code added to correctly implement the disposable pattern.
+        /// <inheritdoc/>
         public void Dispose() =>
             // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
             Dispose(true);
