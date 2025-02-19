@@ -20,33 +20,32 @@ using System.Collections.Generic;
 using System.Linq;
 using Windows.Devices.Gpio;
 
-namespace Dht.Sharp
+namespace Dht.Sharp.Decorators;
+
+internal static class DhtExtensions
 {
-	internal static class DhtExtensions
-	{
-        /// <summary>
-        /// Returns the checksum value given by the sensor.
-        /// </summary>
-        /// <param name="data"></param>
-        /// <returns></returns>
-        public static byte ExpectedChecksum(this byte[] data) =>
-            data[4];
+    /// <summary>
+    /// Returns the checksum value given by the sensor.
+    /// </summary>
+    /// <param name="data"></param>
+    /// <returns></returns>
+    public static byte ExpectedChecksum(this byte[] data) =>
+        data[4];
 
-        /// <summary>
-        /// Calculates the checksum of the first 4 bytes of data.
-        /// </summary>
-        /// <param name="data"></param>
-        /// <returns></returns>
-        public static byte ActualChecksum(this byte[] data) =>
-            (byte)(data[0] + data[1] + data[2] + data[3]);
+    /// <summary>
+    /// Calculates the checksum of the first 4 bytes of data.
+    /// </summary>
+    /// <param name="data"></param>
+    /// <returns></returns>
+    public static byte ActualChecksum(this byte[] data) =>
+        (byte)(data[0] + data[1] + data[2] + data[3]);
 
-        /// <summary>
-        /// Compares the expected and actual checksums.
-        /// </summary>
-        /// <param name="data"></param>
-        /// <returns></returns>
-        public static bool HasValidChecksum(this byte[] data) =>
-            data.ExpectedChecksum() == data.ActualChecksum() &&
-            data.Any(b => !b.Equals(0));
-    }
+    /// <summary>
+    /// Compares the expected and actual checksums.
+    /// </summary>
+    /// <param name="data"></param>
+    /// <returns></returns>
+    public static bool HasValidChecksum(this byte[] data) =>
+        data.ExpectedChecksum() == data.ActualChecksum() &&
+        data.Any(b => !b.Equals(0));
 }

@@ -2,8 +2,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net6.0-windows10.0.17763.0;net7.0-windows10.0.17763.0;net8.0-windows10.0.17763.0</TargetFrameworks>
-    <LangVersion>9.0</LangVersion>
+    <TargetFrameworks>net6.0-windows10.0.17763.0;net9.0-windows10.0.17763.0</TargetFrameworks>
+    <LangVersion>Latest</LangVersion>
     <OutputPath>..\$(Configuration)\</OutputPath>
     <GeneratePackageOnBuild Condition="'$(Configuration)' == 'Release'">true</GeneratePackageOnBuild>
   </PropertyGroup>
@@ -12,14 +12,14 @@
     <Description>Native C# library for the DHT11 and DHT22 sensors</Description>
     <Authors>Daniel M. Porrey, Olof Lagerkvist</Authors>
     <Company>Daniel M. Porrey, Olof Lagerkvist</Company>
-    <Copyright>Copyright © 2018-2022</Copyright>
-    <PackageVersion>2.0.0</PackageVersion>
+    <Copyright>Copyright © 2018-2025</Copyright>
+    <PackageVersion>2.0.1</PackageVersion>
   </PropertyGroup>
   
   <ItemGroup>
     <PackageReference Include="LTRData.Extensions" Version="*" />
-    <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.17763.1000" Condition="'$(TargetFramework.Contains(`-windows`))' == 'false'" />
-    <PackageReference Include="System.Device.Gpio" Version="1.5.0" Condition="'$(TargetFramework.Contains(`-windows`))' == 'true'" />
+    <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.17763.*" Condition="'$(TargetFramework.Contains(`-windows`))' == 'false'" />
+    <PackageReference Include="System.Device.Gpio" Version="*" Condition="'$(TargetFramework.Contains(`-windows`))' == 'true'" />
   </ItemGroup>
 
 </Project>

@@ -17,59 +17,58 @@
 //
 using Windows.Devices.Gpio;
 
-namespace Dht.Sharp
-{
-    /// <summary>
-    /// An instance of IDht used specifically for the DHT22 sensor.
-    /// </summary>
-    public class Dht22 : DhtBase
+namespace Dht.Sharp.Models;
+
+/// <summary>
+/// An instance of IDht used specifically for the DHT22 sensor.
+/// </summary>
+public class Dht22 : DhtBase
 	{
-        /// <summary>
-        /// Creates an instance of Dht.Sharp.Dht22 with the given Data Pin.
-        /// </summary>
-        /// <param name="dataPin">Specifies the GPIO pin used to read data from the sensor. This pin is connected
-        /// directly to the data pin on the sensor.</param>
-        public Dht22(GpioPin dataPin)
-            : base(dataPin) =>
-            MinSampleInterval = 2000;
+    /// <summary>
+    /// Creates an instance of Dht.Sharp.Dht22 with the given Data Pin.
+    /// </summary>
+    /// <param name="dataPin">Specifies the GPIO pin used to read data from the sensor. This pin is connected
+    /// directly to the data pin on the sensor.</param>
+    public Dht22(GpioPin dataPin)
+        : base(dataPin) =>
+        MinSampleInterval = 2000;
 
-        /// <summary>
-        /// Converts the byte data to a temperature value.
-        /// </summary>
-        /// <param name="data"></param>
-        /// <returns></returns>
-        protected override double ParseTemperature(byte[] data)
+    /// <summary>
+    /// Converts the byte data to a temperature value.
+    /// </summary>
+    /// <param name="data"></param>
+    /// <returns></returns>
+    protected override double ParseTemperature(byte[] data)
+    {
+        // ***
+        // *** Get the temperature from bytes 2 and 3. AND byte 2 the 
+        // *** high byte with 0x7f to clear the highest bit (this bit is
+        // *** used to indicate if the temperature is positive or negative).
+        // ***
+        var returnValue = (((data[2] & 0x7f) << 8) + data[3]) / 10d;
+
+        // ***
+        // *** if the highest bit in the temperature is 1, then this
+        // *** is a negative temperature value.
+        // ***
+        var negativeTemperature = (data[2] & 0x80) == 0x80;
+
+        if (negativeTemperature)
         {
-            // ***
-            // *** Get the temperature from bytes 2 and 3. AND byte 2 the 
-            // *** high byte with 0x7f to clear the highest bit (this bit is
-            // *** used to indicate if the temperature is positive or negative).
-            // ***
-            var returnValue = (((data[2] & 0x7f) << 8) + data[3]) / 10d;
-
-            // ***
-            // *** if the highest bit in the temperature is 1, then this
-            // *** is a negative temperature value.
-            // ***
-            var negativeTemperature = (data[2] & 0x80) == 0x80;
-
-            if (negativeTemperature)
-            {
-                returnValue *= -1;
-            }
-
-            return returnValue;
+            returnValue *= -1;
         }
 
-        /// <summary>
-        /// Converts the byte data to a humidity value.
-        /// </summary>
-        /// <param name="data"></param>
-        /// <returns></returns>
-        protected override double ParseHumidty(byte[] data) =>
-            // ***
-            // *** Get the humidity from bytes 0 and 1
-            // ***
-            ((data[0] << 8) + data[1]) / 10d;
+        return returnValue;
     }
+
+    /// <summary>
+    /// Converts the byte data to a humidity value.
+    /// </summary>
+    /// <param name="data"></param>
+    /// <returns></returns>
+    protected override double ParseHumidty(byte[] data) =>
+        // ***
+        // *** Get the humidity from bytes 0 and 1
+        // ***
+        ((data[0] << 8) + data[1]) / 10d;
 }

@@ -15,8 +15,8 @@
 // You should have received a copy of the GNU General Public License
 // along with Dht.Sharp Solution. If not, see http://www.gnu.org/licenses/.
 //
-namespace Dht.Sharp
-{
+namespace Dht.Sharp.Interfaces;
+
 	/// <summary>
 	/// Represents the result of a DHT sensor reading.
 	/// </summary>
@@ -58,9 +58,8 @@ namespace Dht.Sharp
 		/// </summary>
 		double Temperature { get; }
 
-        /// <summary>
-        /// Gets the humidity from the sensor.
-        /// </summary>
-        double Humidity { get; }
+    /// <summary>
+    /// Gets the humidity from the sensor.
+    /// </summary>
+    double Humidity { get; }
 	}
-}

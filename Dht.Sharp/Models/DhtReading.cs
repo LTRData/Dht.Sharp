@@ -16,17 +16,19 @@
 // along with Dht.Sharp Solution. If not, see http://www.gnu.org/licenses/.
 //
 
-namespace Dht.Sharp
-{
+using Dht.Sharp.Interfaces;
+
+namespace Dht.Sharp.Models;
+
 	internal class DhtReading : IDhtReading
 	{
-        internal DhtReading() =>
-            Result = DhtReadingResult.None;
+    internal DhtReading() =>
+        Result = DhtReadingResult.None;
 
-        /// <summary>
-        /// Gets the result of the sensor reading.
-        /// </summary>
-        public DhtReadingResult Result { get; set; }
+    /// <summary>
+    /// Gets the result of the sensor reading.
+    /// </summary>
+    public DhtReadingResult Result { get; set; }
 
 		/// <summary>
 		/// Gets the temperature from sensor.
@@ -38,11 +40,10 @@ namespace Dht.Sharp
 		/// </summary>
 		public double Humidity { get; set; }
 
-        public static IDhtReading FromTimeout() => new DhtReading
-        {
-            Temperature = 0d,
-            Humidity = 0d,
-            Result = DhtReadingResult.Timeout
-        };
-    }
+    public static IDhtReading FromTimeout() => new DhtReading
+    {
+        Temperature = 0d,
+        Humidity = 0d,
+        Result = DhtReadingResult.Timeout
+    };
 }

@@ -5,6 +5,8 @@
     <PackageId>LTRData.$(MSBuildProjectName)</PackageId>
     <Company>LTR Data</Company>
     <PackageOutputPath>$(LocalNuGetPath)</PackageOutputPath>
+	<GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
   </PropertyGroup>
   
 </Project>

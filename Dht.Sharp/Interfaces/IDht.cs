@@ -19,17 +19,17 @@ using System;
 using System.Threading.Tasks;
 using Windows.Devices.Gpio;
 
-namespace Dht.Sharp
-{
+namespace Dht.Sharp.Interfaces;
+
 	/// <summary>
 	/// Defines a type for a DHT sensor that can be used for a DHT22 or DHT11.
 	/// </summary>
 	public interface IDht : IDisposable
 	{
-        /// <summary>
-        /// Gets pin number for GPIO pin in use by this instance.
-        /// </summary>
-        int PinNumber { get; }
+    /// <summary>
+    /// Gets pin number for GPIO pin in use by this instance.
+    /// </summary>
+    int PinNumber { get; }
 
 		/// <summary>
 		/// Gets/sets a value in ms that indicates how long to wait for the sensor to 
@@ -37,32 +37,31 @@ namespace Dht.Sharp
 		/// </summary>
 		int ReadTimeout { get; set; }
 
-        /// <summary>
-        /// Gets/sets number of times to retry on timeouts, checksum errors etc.
-        /// </summary>
-        int RetryCount { get; set; }
+    /// <summary>
+    /// Gets/sets number of times to retry on timeouts, checksum errors etc.
+    /// </summary>
+    int RetryCount { get; set; }
 
-        /// <summary>
-        /// Delay in ms when initializing sensor before first reading or after failed readings.
-        /// </summary>
-        int InitializationDelay { get; set; }
+    /// <summary>
+    /// Delay in ms when initializing sensor before first reading or after failed readings.
+    /// </summary>
+    int InitializationDelay { get; set; }
 
-        /// <summary>
-        /// Delay in ms when reinitializing sensor for a new reading after a successful reading.
-        /// </summary>
-        int ReinitializationDelay { get; set; }
+    /// <summary>
+    /// Delay in ms when reinitializing sensor for a new reading after a successful reading.
+    /// </summary>
+    int ReinitializationDelay { get; set; }
 
-        /// <summary>
-        /// Minimum interval in ms required by sensor between readings. Default is 1000 ms
-        /// for DHT11 and 2000 ms for DHT22.
-        /// </summary>
-        int MinSampleInterval { get; set; }
+    /// <summary>
+    /// Minimum interval in ms required by sensor between readings. Default is 1000 ms
+    /// for DHT11 and 2000 ms for DHT22.
+    /// </summary>
+    int MinSampleInterval { get; set; }
 
-        /// <summary>
-        /// Gets a reading from the sensor.
-        /// </summary>
-        /// <returns>Returns an IDhtReading instance containing 
-        /// the data from the sensor.</returns>
-        Task<IDhtReading> GetReadingAsync();
+    /// <summary>
+    /// Gets a reading from the sensor.
+    /// </summary>
+    /// <returns>Returns an IDhtReading instance containing 
+    /// the data from the sensor.</returns>
+    Task<IDhtReading> GetReadingAsync();
 	}
-}
