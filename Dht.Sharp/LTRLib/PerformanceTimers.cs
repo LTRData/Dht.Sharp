@@ -17,7 +17,6 @@
 
 using System;
 using System.Diagnostics;
-using System.Threading;
 
 namespace Dht.Sharp.LTRLib;
 
@@ -65,7 +64,7 @@ internal static class PerformanceTimers
     /// <param name="microsec">Number of ticks.</param>
     /// <returns>Number of performance timer counts corresponding to specified number of microseconds, rounded up to nearest integer.</returns>
     public static long ConvertMicrosecondsToPerformanceCounts(long microsec) =>
-        ConvertTicksToPerformanceCounts(checked(microsec * ticks_per_microsecond));
+        checked(microsec * perfs_per_microsecond);
 
     /// <summary>
     /// Converts a TimeSpan value to performance timer counts.
@@ -111,6 +110,7 @@ internal static class PerformanceTimers
 
     #region Internal implementation
     private static readonly long ticks_per_microsecond = TimeSpan.FromSeconds(1).Ticks / 1000000;
+    private static readonly long perfs_per_microsecond = Stopwatch.Frequency / 1000000;
     private static readonly long performance_counts_per_ticks_multiplier;
     private static readonly long performance_counts_per_ticks_divisor;
 

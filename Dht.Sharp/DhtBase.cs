@@ -17,15 +17,13 @@
 //
 
 using Dht.Sharp.Decorators;
-using Dht.Sharp.Interfaces;
-using LTRData.Extensions.Buffers;
 using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using Windows.Devices.Gpio;
+using System.Device.Gpio;
 using static Dht.Sharp.LTRLib.PerformanceTimers;
 
-namespace Dht.Sharp.Models;
+namespace Dht.Sharp;
 
 /// <summary>
 /// Base class for IDht sensors.
@@ -33,15 +31,15 @@ namespace Dht.Sharp.Models;
 /// <remarks>
 /// Creates an instance of Dht.Sharp.DhtBase with the given Data Pin.
 /// </remarks>
-/// <param name="gpio_pin">Specifies the GPIO pin used to read data from the sensor. This pin is connected
+/// <param name="gpioPin">Specifies the GPIO pin used to read data from the sensor. This pin is connected
 /// directly to the data pin on the sensor.</param>
-public abstract class DhtBase(GpioPin gpio_pin) : IDht
+public abstract class DhtBase(GpioPin gpioPin)
 {
     /// <summary>
     /// Gets/sets the GPIO pin used to read data from the sensor. This pin is connected
     /// directly to the data pin on the sensor.
     /// </summary>
-    private GpioPin pin = gpio_pin ?? throw new ArgumentNullException(nameof(gpio_pin));
+    private readonly GpioPin pin = gpioPin ?? throw new ArgumentNullException(nameof(gpioPin));
 
     /// <inheritdoc/>
     public int PinNumber => pin.PinNumber;
@@ -79,35 +77,35 @@ public abstract class DhtBase(GpioPin gpio_pin) : IDht
 
     private long last_success_timestamp;
 
-    private static readonly long OneThreshold = ConvertMicrosecondsToPerformanceCounts(110);
+    private static readonly long OneThreshold = ConvertMicrosecondsToPerformanceCounts(100);
 
     /// <summary>
     /// Gets a reading from the sensor.
     /// </summary>
     /// <returns>Returns an IDhtReading instance containing 
     /// the data from the sensor.</returns>
-    public async Task<IDhtReading> GetReadingAsync()
+    public async Task<DhtReading> GetReadingAsync()
     {
-        IDhtReading reading = null;
+        DhtReading reading = default;
 
         for (var attempt = 0; attempt <= RetryCount; attempt++)
         {
-            pin.Write(GpioPinValue.High);
-            pin.SetDriveMode(GpioPinDriveMode.Output);
+            pin.Write(PinValue.High);
+            pin.SetPinMode(PinMode.Output);
 
             if (last_success_timestamp == 0)
             {
-                await Task.Delay(InitializationDelay);
+                await Task.Delay(InitializationDelay).ConfigureAwait(false);
             }
             else if (Environment.TickCount64 - last_success_timestamp < MinSampleInterval)
             {
                 var delay = Math.Max(MinSampleInterval - (int)(Environment.TickCount64 - last_success_timestamp), ReinitializationDelay);
 
-                await Task.Delay(delay);
+                await Task.Delay(delay).ConfigureAwait(false);
             }
             else
             {
-                await Task.Delay(ReinitializationDelay);
+                await Task.Delay(ReinitializationDelay).ConfigureAwait(false);
             }
 
             reading = GetReading();
@@ -136,21 +134,21 @@ public abstract class DhtBase(GpioPin gpio_pin) : IDht
 
     private const int DataBufferBits = DataBufferBytes * 8;
 
-    private readonly byte[] DataBuffer = new byte[DataBufferBytes];
-
-    private IDhtReading GetReading()
+    private DhtReading GetReading()
     {
-        Array.Clear(DataBuffer, 0, DataBuffer.Length);
+        Span<byte> data = stackalloc byte[DataBufferBytes];
+
+        data.Clear();
 
         // ***
         // *** Bring the line low for 18 ms (this is needed for the DHT11), the DHT22 does need
         // *** need as long.
         // ***
-        pin.Write(GpioPinValue.Low);
+        pin.Write(PinValue.Low);
         SpinWaitPerformanceCounts(perf_counts_18ms);
-        pin.Write(GpioPinValue.High);
+        pin.Write(PinValue.High);
         SpinWaitPerformanceCounts(perf_counts_40us);
-        pin.SetDriveMode(GpioPinDriveMode.Input);
+        pin.SetPinMode(PinMode.Input);
         SpinWaitPerformanceCounts(perf_counts_10us);
 
         // ***
@@ -172,7 +170,7 @@ public abstract class DhtBase(GpioPin gpio_pin) : IDht
 
             var value = pin.Read();
 
-            if (previousValue == GpioPinValue.High && value == GpioPinValue.Low)
+            if (previousValue == PinValue.High && value == PinValue.Low)
             {
                 // ***
                 // *** A falling edge was detected
@@ -182,9 +180,10 @@ public abstract class DhtBase(GpioPin gpio_pin) : IDht
                 if (i >= 0)
                 {
                     var difference = unchecked(now - prevTime);
+
                     if (difference > OneThreshold)
                     {
-                        DataBuffer.SetBit(i);
+                        data[i >> 3] |= (byte)(1 << (7 - (i & 7)));
                     }
                 }
 
@@ -198,15 +197,15 @@ public abstract class DhtBase(GpioPin gpio_pin) : IDht
         // ***
         // *** Convert the 5 bytes of data to an IDhtReading instance.
         // ***
-        return ParseData(DataBuffer);
+        return ParseData(data);
     }
 
-    private DhtReading ParseData(byte[] data)
+    private DhtReading ParseData(ReadOnlySpan<byte> data)
     {
         // ***
         // *** Verify the checksum.
         // ***
-        if (data.HasValidChecksum())
+        if (DhtExtensions.IsValidReading(data))
         {
             // ***
             // *** This is a valid reading, convert the temperature and humidity.
@@ -237,42 +236,12 @@ public abstract class DhtBase(GpioPin gpio_pin) : IDht
     /// </summary>
     /// <param name="data"></param>
     /// <returns></returns>
-    protected abstract double ParseTemperature(byte[] data);
+    protected abstract double ParseTemperature(ReadOnlySpan<byte> data);
 
     /// <summary>
     /// Converts the byte data to a humidity value.
     /// </summary>
     /// <param name="data"></param>
     /// <returns></returns>
-    protected abstract double ParseHumidty(byte[] data);
-
-    private bool disposedValue = false; // To detect redundant calls
-
-    /// <inheritdoc/>
-    protected virtual void Dispose(bool disposing)
-    {
-        if (!disposedValue)
-        {
-            if (disposing)
-            {
-                // TODO: dispose managed state (managed objects).
-                pin?.Dispose();
-            }
-
-            // TODO: set large fields to null.
-            pin = null;
-
-            disposedValue = true;
-        }
-    }
-
-    // This code added to correctly implement the disposable pattern.
-    /// <inheritdoc/>
-    public void Dispose()
-    {
-        // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-        Dispose(true);
-
-        GC.SuppressFinalize(this);
-    }
+    protected abstract double ParseHumidty(ReadOnlySpan<byte> data);
 }

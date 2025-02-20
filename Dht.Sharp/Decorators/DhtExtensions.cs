@@ -16,9 +16,7 @@
 // along with Dht.Sharp Solution. If not, see http://www.gnu.org/licenses/.
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using Windows.Devices.Gpio;
+using System.Device.Gpio;
 
 namespace Dht.Sharp.Decorators;
 
@@ -29,7 +27,7 @@ internal static class DhtExtensions
     /// </summary>
     /// <param name="data"></param>
     /// <returns></returns>
-    public static byte ExpectedChecksum(this byte[] data) =>
+    public static byte ExpectedChecksum(ReadOnlySpan<byte> data) =>
         data[4];
 
     /// <summary>
@@ -37,7 +35,7 @@ internal static class DhtExtensions
     /// </summary>
     /// <param name="data"></param>
     /// <returns></returns>
-    public static byte ActualChecksum(this byte[] data) =>
+    public static byte ActualChecksum(ReadOnlySpan<byte> data) =>
         (byte)(data[0] + data[1] + data[2] + data[3]);
 
     /// <summary>
@@ -45,7 +43,7 @@ internal static class DhtExtensions
     /// </summary>
     /// <param name="data"></param>
     /// <returns></returns>
-    public static bool HasValidChecksum(this byte[] data) =>
-        data.ExpectedChecksum() == data.ActualChecksum() &&
-        data.Any(b => !b.Equals(0));
+    public static bool IsValidReading(ReadOnlySpan<byte> data) =>
+        (data[0] | data[1] | data[2] | data[3]) != 0 &&
+        ExpectedChecksum(data) == ActualChecksum(data);
 }

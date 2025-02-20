@@ -2,10 +2,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0-windows10.0.17763.0;net9.0-windows10.0.17763.0</TargetFrameworks>
+    <TargetFrameworks>net6.0;net9.0</TargetFrameworks>
     <LangVersion>Latest</LangVersion>
     <OutputPath>..\$(Configuration)\</OutputPath>
     <GeneratePackageOnBuild Condition="'$(Configuration)' == 'Release'">true</GeneratePackageOnBuild>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -17,9 +18,7 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="LTRData.Extensions" Version="*" />
-    <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.17763.*" Condition="'$(TargetFramework.Contains(`-windows`))' == 'false'" />
-    <PackageReference Include="System.Device.Gpio" Version="*" Condition="'$(TargetFramework.Contains(`-windows`))' == 'true'" />
+    <PackageReference Include="System.Device.Gpio" Version="*" />
   </ItemGroup>
 
 </Project>
