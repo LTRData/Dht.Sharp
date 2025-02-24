@@ -77,7 +77,7 @@ public abstract class DhtBase(GpioPin gpioPin)
 
     private long last_success_timestamp;
 
-    private static readonly long OneThreshold = ConvertMicrosecondsToPerformanceCounts(100);
+    private static readonly long OneThreshold = ConvertMicrosecondsToPerformanceCounts(112);
 
     /// <summary>
     /// Gets a reading from the sensor.
