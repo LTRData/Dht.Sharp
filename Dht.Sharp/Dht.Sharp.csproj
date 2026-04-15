@@ -2,7 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0;net9.0</TargetFrameworks>
+    <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
     <LangVersion>Latest</LangVersion>
     <OutputPath>..\$(Configuration)\</OutputPath>
     <GeneratePackageOnBuild Condition="'$(Configuration)' == 'Release'">true</GeneratePackageOnBuild>
@@ -13,8 +13,8 @@
     <Description>Native C# library for the DHT11 and DHT22 sensors</Description>
     <Authors>Daniel M. Porrey, Olof Lagerkvist</Authors>
     <Company>Daniel M. Porrey, Olof Lagerkvist</Company>
-    <Copyright>Copyright © 2018-2025</Copyright>
-    <PackageVersion>2.0.1</PackageVersion>
+    <Copyright>Copyright © 2018-2026</Copyright>
+    <PackageVersion>2.0.2</PackageVersion>
   </PropertyGroup>
   
   <ItemGroup>
