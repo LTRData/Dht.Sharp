@@ -1,0 +1,24 @@
+<Project>
+
+  <PropertyGroup>
+    <LangVersion>Latest</LangVersion>
+    <PackageId>LTRData.$(MSBuildProjectName)</PackageId>
+    <Company>LTR Data</Company>
+    <PackageOutputPath>$(LocalNuGetPath)</PackageOutputPath>
+	<GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+	<DebugType>portable</DebugType>
+  </PropertyGroup>
+
+  <!-- SourceLink support -->
+  <PropertyGroup>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+
+   <ItemGroup>
+    <None Include="..\README.md" Link="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+  
+</Project>
